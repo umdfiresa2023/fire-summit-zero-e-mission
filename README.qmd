@@ -1,42 +1,119 @@
 ---
-title: "Team Name's FIRE Summit Presentation"
-author: "Team Members"
+title: "Team Zero E-Mission's FIRE Summit Presentation"
+author: "Sohum Belhe, Aadit Shah, Aidan Vu"
 format: gfm
 editor: visual
 ---
 
 ## Research Question
 
-Write research question here.
+What is the impact of opening electric vehicle (EV) battery recycling plants on PM2.5 pollution levels in surrounding areas?
 
-(Optional) Insert an image if it helps motivate the research question.
+![](https://img.canarymedia.com/content/uploads/Ultium-Cells-Ohio-factory-aerial-March-2022.jpg?auto=compress%2Cformat&crop=focalpoint&fit=crop&fp-x=0.5&fp-y=0.5&h=501&q=80&w=864&s=860c4d230faec59f44d1c4884368b830)
 
 ## Data Wrangling
 
 **Outcome variable**
 
-Write description, data source, and wrangling methodology. Show a map if you have made one.
+Our outcome variable is air quality before and after opening an electric vehicle battery recycling plant. Specifically, we examine the amount of NO2 emissions in surrounding areas.
 
-If you have loops, do not run the entire thing. Instead, run one sample loop or just display your codes without making it run by adding **#\| eval: false** at the top of the chunk.
+Our data comes from the NASA NOx emissions database
 
-You can also suppress warnings by adding **#\| warning: false**.
+In the code below, we combined our own research of EV battery recycling plant data, and queried the data from the NASA database. We processed this data, extracted it, and compiled it in a dataframe.
 
 ```{r}
 #| warning: false
+#| eval: false
 
 library("tidyverse")
 library("terra")
-library("simplermarkdown")
+library("raster")
+
+factories<-read.csv("Factory Data.csv")
+factory_plot <- vect(factories,geom=c("Longitude", "Latitude"))
+bf<-buffer(factory_plot, width=10000)
+
+# starting index
+i<-2 
+
+df3<-c()
+for (i in 2:501) {
+  print(i)
+  n<-nc_open(paste0(path, f[i]))  
+  r<-brick(paste0(path, f[i]), varname="ColumnAmountNO2")
+  sr <- as(r, "SpatRaster")
+  rp<-project(sr, "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ")
+  
+  df<-extract(rp, bf, fun="mean")
+  
+  df2<-data.frame(df, filename=f[i])
+  
+  names(df2)<-c("ID", "NO2", "Filename")
+  
+  df3<-rbind(df3,df2)
+}
 ```
 
 **Treatment variable**
 
-Write description, data source, and wrangling methodology. Show a map if you have one.
+Our treatment variable is the opening of the lithium ion battery recycling plants. We mapped the data, collecting the longitude, latitude, and opening dates from separate factories, our map is shown below.
 
-**Control variables**
+```{r}
+#| warning: false
+install.packages("tidyverse")
+library("tidyverse")
+install.packages("raster")
+library("raster")
+install.packages("simplermarkdown")
+library("simplermarkdown")
+install.packages("terra")
+library("terra")
+install.packages("tidyterra")
+library("tidyterra")
+factories<-read.csv("Factory Data.csv")
+factory_plot <- vect(factories,geom=c("Latitude", "Longitude"))
+s <- vect("state/cb_2018_us_state_20m.shp")
+crs(factory_plot) <- crs(s)
+plot(factory_plot)
+plot(s, add = TRUE)
+```
 
-Write description, data source, and wrangling methodology. Show a map if you have one.
+Below is our factories mapped on a map of the US.
+
+```{r}
+factories<-read.csv("Factory Data.csv")
+factory_plot <- vect(factories,geom=c("Longitude", "Latitude"))
+s <- vect("state/cb_2018_us_state_20m.shp")
+#f<-project(factory_plot, "+proj=longlat +ellps=WGS84 +datum=WGS84")
+crs(factory_plot) <- crs(s)
+plot(factory_plot)
+plot(s, add = TRUE)
+```
 
 ## Preliminary Results
 
 Display a figure showing how the treatment variable impacted the outcome variable.
+
+```{r}
+df<-read.csv("nasa_no2.csv")
+
+open1<-as.Date("20220101", format='%Y%m%d')
+open2<-as.Date("20220501", format='%Y%m%d')
+open3<-as.Date("20221001", format='%Y%m%d')
+
+df2<-df %>%
+  filter(!is.na(NO2)) %>%
+  filter(ID<=3) %>%
+  mutate(date=paste0(substr(Filename,6,9), substr(Filename, 11,14))) %>%
+  mutate(date=as.Date(date, format='%Y%m%d')) %>%
+  mutate(PrePost=ifelse(ID==1 & date<open1, "Before", "After")) %>%
+  mutate(PrePost=ifelse(ID==2 & date<open2, "Before", PrePost)) %>%
+  mutate(PrePost=ifelse(ID==3 & date<open3, "Before", PrePost))
+
+ggplot(data=df2, aes(x=date, y=NO2, color=PrePost, shape=factor(ID)))+
+  geom_point()+
+  theme_bw()+
+  xlab("Year")+
+  ylab("Total Column Troposheric NO2")+
+  labs(shape = "Factory ID", colour = "Opening Status")
+```
