@@ -16,7 +16,11 @@ Our outcome variable is air quality before and after opening an electric
 vehicle battery recycling plant. Specifically, we examine the amount of
 NO2 emissions in surrounding areas.
 
-Our data comes from the NASA NOx emissions database
+Our data comes from the NASA NOx emissions database. The dataset obtained from NASA Earth Data for our research is namely : 
+OMI/Aura NO2 Tropospheric, Stratospheric & Total Columns MINDS Daily L2 Global Gridded 0.25 degree x 0.25 degree V1.1 (OMI_MINDS_NO2G) at GES DISC
+This dataset contains daily global measurements of nitrogen dioxide (NO2) in the Earth's atmosphere. The data is gridded at a resolution of 0.25 degrees 
+latitude by 0.25 degrees longitude and is available from 2004 to present. In our research, we exclusively utilized data specific to the United States, 
+employing the filtering options available on the website.
 
 In the code below, we combined our own research of EV battery recycling
 plant data, and queried the data from the NASA database. We processed
