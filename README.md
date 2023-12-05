@@ -131,12 +131,11 @@ df2<-df %>%
   mutate(PrePost=ifelse(ID==2 & date<open2, "Before", PrePost)) %>%
   mutate(PrePost=ifelse(ID==3 & date<open3, "Before", PrePost))
 
-ggplot(data=df2, aes(x=date, y=NO2, color=PrePost, shape=factor(ID)))+
-  geom_point()+
-  theme_bw()+
-  xlab("Year")+
-  ylab("Total Column Troposheric NO2")+
-  labs(shape = "Factory ID", colour = "Opening Status")
+ggplot(data=df2, aes(x=factor(ID), y=NO2, fill=PrePost)) +
+  geom_boxplot() +
+  theme_bw() +
+  labs(title = "NO2 Before and After Opening", x = "Factory ID", y = "NO2 Value", fill = "Opening Status")
+
 ```
 
-![](README_files/figure-commonmark/unnamed-chunk-4-1.png)
+![image](https://github.com/umdfiresa2023/fire-summit-zero-e-mission/assets/89537221/f3829645-b016-4b0d-882c-8a8023d14ebf)
